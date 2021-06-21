@@ -1,0 +1,18 @@
+.chat {
+  display: flex;
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat__sidebar {
+  flex: 0.33;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+
+.chat__box {
+  flex: 0.67;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}

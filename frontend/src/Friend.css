@@ -1,0 +1,22 @@
+.friend {
+  display: flex;
+  width: 500px;
+  align-items: center;
+  background-color: white;
+  cursor: pointer;
+  padding: 10px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: 1px solid lightgray;
+}
+
+.friend__info {
+  flex: 1;
+  margin-left: 10px;
+}
+
+.friend__info > span {
+  color: gray;
+  font-size: small;
+  font-weight: 400;
+}
