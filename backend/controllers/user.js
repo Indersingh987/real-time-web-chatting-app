@@ -1,18 +1,6 @@
-import User from '../models/userModel.js'
-import RequestSend from '../models/requestSendModel.js'
-import Request from '../models/requestModel.js'
-import Friend from '../models/friendModel.js';
-
-const getUsers = async(req,res) =>{
-    try {
-        const users = await User.find({});
-        return res.status(200).send(users)
-
-    } catch (error) {
-        return res.status(500).send(error)
-    }
-    
-}
+import User from '../models/user.js'
+import Request from '../models/request.js'
+import Friend from '../models/friend.js';
 
 const register = async(req,res) => {
     const data = req.body
@@ -35,9 +23,9 @@ const login = async (req,res) => {
     try {
         if(!data) return res.status(404).json({message:'can not find user'})
         const user = await User.findOne({ email:data.email })
-        if(!user) return res.status(200).json({message:'check your email',IsLogin:false})
-        if(user.password !== data.password) return res.status(200).json({message:'password is incorrect',IsLogin:false})
-        res.status(200).json({userData:user,IsLogin:true})
+        if(!user) return res.status(200).json({message:'check your email'})
+        if(user.password !== data.password) return res.status(200).json({message:'password is incorrect'})
+        res.status(200).json(user)
     } catch (error) {
         res.status(500).send(error)
         console.log(error)
@@ -64,65 +52,4 @@ const search = async (req,res) => {
     }
 }
 
-const request = async (req,res) => {
-    const request = req.body
-
-    try {
-        if(!request.to.email) return res.status(404).json({message:'no request found'})
-        const requestSendData = await RequestSend.create(request)
-        const loginUser = await User.findOne({email:request.from.email})
-        const requestUser = await User.findOne({email:request.to.email})
-        loginUser.requestSendList.push(requestSendData._id)
-        loginUser.save()
-        const requestData = await Request.create(request.from)
-        requestUser.requestList.push(requestData._id)
-        requestUser.save()
-        res.status(200).send(requestUser)
-    } catch (error) {
-        console.log(error)
-        res.status(500)
-    }
-}
-
-const getRequestUserById = async (req,res) => {
-    const userIds = req.body
-    const users = []
-
-    try {
-        if(!userIds.ids.length) return res.status(404).json({message:'source not found'})
-        for(let i=0; i<userIds.ids.length; i++){
-            const user = await Request.findById(userIds.ids[i])
-            users.push(user)
-        };
-        res.status(200).send(users)
-    } catch (error) {
-        console.log(error)
-        res.status(500).send(error)
-    }
-}
-
-const getFriendById = async (req,res) =>{
-    const friendData = req.body
-    // console.log(friendData)
-    
-    try {
-        if(!friendData) return res.status(404)
-        if(!friendData.friendDoc) return res.status(200).json({message:'no friend found'})
-
-        const friendDoc = await Friend.findById(friendData.friendDoc)
-
-        if(friendDoc.user1 == friendData.loginUser) {
-            const friend = await User.findById(friendDoc.user2)
-            return res.status(200).send(friend)
-        }
-
-        const friend = await User.findById(friendDoc.user1)
-        return res.status(200).send(friend)
-        
-    } catch (error) {
-        console.log(error)
-        res.status(500)
-    }
-}
-
-export { getUsers, register,login,search,request,getRequestUserById,getFriendById }
+export {register,login,search }

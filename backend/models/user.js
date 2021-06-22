@@ -13,21 +13,13 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String
     },
-    rooms:[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Room"
-    }],
-    friends:[{
+    friendsDocIdList:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Friend'
     }],
-    requestList:[{
+    requestDocIdList:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Request'
-    }],
-    requestSendList:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'RequestSend'
     }]
 })
 

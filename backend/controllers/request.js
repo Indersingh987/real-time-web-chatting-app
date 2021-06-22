@@ -1,42 +1,69 @@
-import User from '../models/userModel.js' 
-import Request from '../models/requestModel.js' 
-import RequestSend from '../models/requestSendModel.js' 
-import Friend from '../models/friendModel.js' 
+import User from '../models/user.js' 
+import Request from '../models/request.js' 
+import Friend from '../models/friend.js' 
+
+const send = async (req,res) => {
+    const data = req.body
+    
+    try {
+        if(!data) return res.status(404).json({message:'could not find resourse'})
+        const requestDoc = await Request.create(data)
+        const from = await User.findById(data.from)
+        const to = await User.findById(data.to)
+        from.requestDocIdList.push(requestDoc._id)
+        from.save()
+        to.requestDocIdList.push(requestDoc._id)
+        to.save()
+        res.status(201).send(requestDoc)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+
+const cancel = async (req,res) => {
+    const data = req.body
+    
+    try {
+        if(!data) return res.status(404).json({message:'could not find resourse'})
+        const requestDoc = await Request.findById(data.requestDocId)
+        const loginUser = await User.findById(requestDoc.from)
+        const reciever = await User.findById(requestDoc.to)
+
+        await User.findOneAndUpdate({email:loginUser.email},{$pull:{requestDocIdList:requestDoc._id}})
+        loginUser.save()
+
+        await User.findOneAndUpdate({email:reciever.email},{$pull:{requestDocIdList:requestDoc._id}})
+        reciever.save()
+        
+        await Request.findByIdAndDelete(requestDoc._id)
+        res.status(201).send("rejected succesfully")
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
 
 const accept = async (req,res) => {
     const data = req.body
 
     try {
-        if(!data) return res.status(404)
-        const loginUser = await User.findOne({email:data.loginUser})
-        const requestUser = await User.findOne({email:data.requestUser})
-        const friendDoc = await Friend.create({user1:loginUser._id,user2:requestUser._id})
+        if(!data) return res.status(404).json({message:'could not find resourse'})
+        const requestDoc = await Request.findById(data.requestDocId)
+        const friendDoc = await Friend.create({user1:requestDoc.from,user2:requestDoc.to})
+        const loginUser = await User.findById(requestDoc.to)
+        const friend = await User.findById(requestDoc.from)
 
+        loginUser.friendsDocIdList.push(friendDoc._id)
+        await User.findOneAndUpdate({email:loginUser.email},{$pull:{requestDocIdList:requestDoc._id}})
+        loginUser.save()
 
-        for(let i=0;i<loginUser.requestList.length;i++){
-            if(loginUser.requestList[i] == data.id) {
-                await User.findOneAndUpdate({_id:loginUser._id},{$pull:{
-                    requestList:loginUser.requestList[i]
-                }},{useFindAndModify: false})
-                await Request.deleteOne({_id:data.id})
-                loginUser.friends.push(friendDoc._id)
-                loginUser.save()
-                break
-            }
-        }
-        for(let i=0;i<requestUser.requestSendList.length;i++){
-            const requestSendDoc =  await RequestSend.findById(requestUser.requestSendList[i])
-            if(loginUser.email == requestSendDoc.to.email) {
-                await User.findOneAndUpdate({_id:requestUser._id},{$pull:{
-                    requestSendList:requestUser.requestSendList[i]
-                }},{useFindAndModify: false})
-                await RequestSend.deleteOne({_id:requestUser.requestSendList[i]})
-                requestUser.friends.push(friendDoc._id)
-                requestUser.save()
-                break
-            }
-        }
-        res.status(200).send(friendDoc)
+        friend.friendsDocIdList.push(friendDoc._id)
+        await User.findOneAndUpdate({email:friend.email},{$pull:{requestDocIdList:requestDoc._id}})
+        friend.save()
+
+        await Request.findByIdAndDelete(requestDoc._id)
+        res.status(201).send(friendDoc)
     } catch (error) {
         console.log(error)
         res.status(500).send(error)
@@ -44,7 +71,47 @@ const accept = async (req,res) => {
 }
 
 const reject = async (req,res) =>{
+    const data = req.body
 
+    try {
+        if(!data) return res.status(404).json({message:'could not find resourse'})
+        const requestDoc = await Request.findById(data.requestDocId)
+        const loginUser = await User.findById(requestDoc.to)
+        const sender = await User.findById(requestDoc.from)
+
+        await User.findOneAndUpdate({email:loginUser.email},{$pull:{requestDocIdList:requestDoc._id}})
+        loginUser.save()
+
+        await User.findOneAndUpdate({email:sender.email},{$pull:{requestDocIdList:requestDoc._id}})
+        sender.save()
+        
+        await Request.findByIdAndDelete(requestDoc._id)
+        res.status(201).send("rejected succesfully")
+       
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
 }
 
-export {accept,reject} 
+const list = async (req,res) =>{
+    const data = req.body
+
+    try {
+        if(!data) return res.status(404).json({message:'can not find source'})
+        let requestSenderUsers = []
+        const loginUser = await User.findById(data.loginUserId)
+        for(let i=0; i < loginUser.requestDocIdList.length; i++){
+            const requestDoc = await Request.findById(loginUser.requestDocIdList[i])
+            if(requestDoc.to == loginUser._id){
+                requestSenderUsers.push(requestDoc)
+            }
+        }
+        res.status(201).json({list:requestSenderUsers})
+    } catch (error) {
+        console.log(error)
+        res.status(500).send(error)
+    }
+}
+
+export {accept,reject,send,cancel,list} 

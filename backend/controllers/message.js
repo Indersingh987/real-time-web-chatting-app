@@ -1,37 +1,48 @@
-import User from '../models/userModel.js'  
-import Friend from '../models/friendModel.js' 
-import Message from '../models/messageModel.js'
+import User from '../models/user.js'  
+import Friend from '../models/friend.js' 
+import Message from '../models/message.js'
 
-const newMessage = async (req,res) =>{
-    const messageData = req.body
+const list = async (req,res) => {
+    const data = req.body
 
     try {
-        if(!messageData) return res.status(404).send('Source does not exit!')
-        const friend = await User.findById(messageData.to)
-        for(let i=0;i<friend.friends.length;i++){
-            const firendDoc = await Friend.findById(friend.friends[i])
-            if(firendDoc.user1 || firendDoc.user2 == messageData.from){
-                const message = await Message.create(messageData)
-                firendDoc.messages.push(message._id)
-                firendDoc.save()
-                return res.status(200).send(message)
+        if(!data) return res.status(404).json({message:'can not find source'})
+        const loginUser = await User.findById(data.loginUserId)
+        const friend = await User.findById(data.friendId)
+        for(let i=0; i < loginUser.friendsDocIdList.length ;i++){
+            for(let j=0; j < friend.friendsDocIdList.length ;j++){
+                if(loginUser.friendsDocIdList[i] == friend.friendsDocIdList[j]){
+                    const friendDoc = await Friend.findById(loginUser.friendsDocIdList[i])
+                    let messageList = []
+                    for(let k=0; k < friendDoc.messagesDocIdList.length; k++){
+                        const messageDoc = await Message.findById(friendDoc.messagesDocIdList[k])
+                        messageList.push(messageDoc)
+                    }
+                    return res.status(201).json({list:messageList,friendDoc:friendDoc})
+                }
             }
         }
+        res.status(400)
     } catch (error) {
         console.log(error)
         res.status(500).send(error)
     }
 }
 
-const getAllMessages = async (req,res)=>{
+const create = async (req,res) => {
+    const data = req.body
 
     try {
-        const messages = await Message.find({})
-        return res.status(200).send(messages)
+        if(!data) return res.status(404).json({message:'can not find source'})
+        const messageDoc = await Message.create({from:data.loginUserId,to:data.friendId,text:data.message,timestamp:data.timestamp})
+        const friendDoc = await Friend.findById(data.friendDocId)
+        friendDoc.messagesDocIdList.push(messageDoc._id)
+        friendDoc.save()
+        res.status(201).send(messageDoc)
     } catch (error) {
         console.log(error)
-        res.status(500)
+        res.status(500).send(error)
     }
 }
 
-export{newMessage, getAllMessages}
+export{list,create}

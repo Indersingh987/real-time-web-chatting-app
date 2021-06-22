@@ -9,7 +9,7 @@ const friendSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:'User'
     },
-    messages:[{
+    messagesDocIdList:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Message'
     }]
