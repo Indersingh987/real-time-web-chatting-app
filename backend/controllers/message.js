@@ -9,20 +9,13 @@ const list = async (req,res) => {
         if(!data) return res.status(404).json({message:'can not find source'})
         const loginUser = await User.findById(data.loginUserId)
         const friend = await User.findById(data.friendId)
-        for(let i=0; i < loginUser.friendsDocIdList.length ;i++){
-            for(let j=0; j < friend.friendsDocIdList.length ;j++){
-                if(loginUser.friendsDocIdList[i] == friend.friendsDocIdList[j]){
-                    const friendDoc = await Friend.findById(loginUser.friendsDocIdList[i])
-                    let messageList = []
-                    for(let k=0; k < friendDoc.messagesDocIdList.length; k++){
-                        const messageDoc = await Message.findById(friendDoc.messagesDocIdList[k])
-                        messageList.push(messageDoc)
-                    }
-                    return res.status(201).json({list:messageList,friendDoc:friendDoc})
-                }
-            }
+        const friendDoc = await Friend.findById(data.friendDocId)
+        let messageList = []
+        for(let k=0; k < friendDoc.messagesDocIdList.length; k++){
+            const messageDoc = await Message.findById(friendDoc.messagesDocIdList[k])
+            messageList.push(messageDoc)
         }
-        res.status(400)
+        return res.status(201).json({list:messageList,friendDocId:friendDoc._id})
     } catch (error) {
         console.log(error)
         res.status(500).send(error)

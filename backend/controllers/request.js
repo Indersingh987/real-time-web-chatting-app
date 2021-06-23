@@ -94,16 +94,17 @@ const reject = async (req,res) =>{
     }
 }
 
+
+//working fine
 const list = async (req,res) =>{
     const data = req.body
-
     try {
         if(!data) return res.status(404).json({message:'can not find source'})
         let requestSenderUsers = []
         const loginUser = await User.findById(data.loginUserId)
         for(let i=0; i < loginUser.requestDocIdList.length; i++){
             const requestDoc = await Request.findById(loginUser.requestDocIdList[i])
-            if(requestDoc.to == loginUser._id){
+            if(JSON.stringify(loginUser._id)  == JSON.stringify(requestDoc.to) )  {
                 requestSenderUsers.push(requestDoc)
             }
         }

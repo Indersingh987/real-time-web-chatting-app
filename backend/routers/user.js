@@ -1,7 +1,10 @@
 import express from 'express'
-import {register,login,search } from '../controllers/user.js' 
+import {users,register,login,search } from '../controllers/user.js' 
 
 const router = express.Router()
+
+//for debuging
+router.get('/',users)
 
 router.post('/register',register)
 router.post('/login',login)

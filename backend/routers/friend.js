@@ -3,6 +3,6 @@ import { list } from '../controllers/friend.js'
 
 const router = express.Router()
 
-router.get('/list',list)
+router.post('/list',list)
 
 export default router

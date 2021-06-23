@@ -16,6 +16,7 @@ app.use(cors())
 
 //connecting db
 mongoose.connect('mongodb://localhost:27017/test1', {useNewUrlParser: true, useUnifiedTopology: true,useCreateIndex:true});
+mongoose.set('useFindAndModify', false);
 
 //route
 app.get('/',(req,res)=>{
