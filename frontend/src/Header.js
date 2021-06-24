@@ -40,6 +40,7 @@ const Header = () => {
     }
 
     const signout = (e) =>{
+        sessionStorage.setItem('user',false)
         sessionStorage.clear()
         history.push('/')
     } 
@@ -54,6 +55,7 @@ const Header = () => {
                     setChat(true)
                     setRequests(false)
                     setFriends(false)
+                    history.push('/chat')
                 }}
                 className={chat?'screen--selected':''}>Chat</p>
 
@@ -61,6 +63,7 @@ const Header = () => {
                     setChat(false)
                     setRequests(true)
                     setFriends(false)
+                    history.push('/requests')
                 }}
                 className={requests ? `screen--selected`:''}>Requests</p>
 
@@ -68,6 +71,7 @@ const Header = () => {
                     setChat(false)
                     setRequests(false)
                     setFriends(true)
+                    history.push('/friends')
                 }}
                  className={friends ?'screen--selected':''}>Friends</p>
             </div>

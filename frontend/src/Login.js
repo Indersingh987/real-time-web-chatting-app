@@ -12,9 +12,10 @@ const Login = () => {
     const [err, setError] = useState(null)
 
     useEffect(() => {
-        if(user.IsLogin) history.push('/main')
-        else if(user.message === 'check your email') setError(true)
-        else setError(false)
+        
+        // if(user.IsLogin) history.push('/chat')
+        // else if(user.message === 'check your email') setError(true)
+        // else setError(false)
     }, [user])
     
 
@@ -22,7 +23,10 @@ const Login = () => {
 
 
     const onSubmit =  (formData) => {
-        dispatch(checkLogin(formData))
+        // dispatch(checkLogin(formData))
+        const user = true;
+        sessionStorage.setItem('user',user)
+        history.push('/chat')
     };
 
     return (
